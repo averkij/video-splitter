@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 
+#ffmpeg docs
+#https://ffmpeg.org/ffmpeg.html
+
+#download ffmpeg
+#https://github.com/BtbN/FFmpeg-Builds/releases
+#https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2021-02-11-12-32/ffmpeg-N-101061-gba2cebb49c-win64-gpl-vulkan.zip
+
+#add folder with ffmpeg to PATH
+
 import csv
 import subprocess
 import math
@@ -7,7 +16,16 @@ import json
 import os
 import shlex
 from optparse import OptionParser
+from datetime import datetime, timedelta
 
+#timestamp format is "05:20:25,620" => "%H:%M:%S,%f"
+def parse_subtitles_timestamp(ts):
+    if not ts:
+        return None
+    # t = datetime.strptime(ts, "%H:%M:%S,%f")
+    # delta = timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
+    # return str(delta.total_seconds())
+    return ts.replace(',','.')
 
 def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
                       extra="", **kwargs):
@@ -31,10 +49,12 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
         if manifest_type == "json":
             config = json.load(manifest_file)
         elif manifest_type == "csv":
-            config = csv.DictReader(manifest_file)
+            config = csv.DictReader(manifest_file, delimiter='\t')
         else:
             print("Format not supported. File must be a csv or json file")
             raise SystemExit
+            
+        print(config)
 
         split_cmd = ["ffmpeg", "-i", filename, "-vcodec", vcodec,
                      "-acodec", acodec, "-y"] + shlex.split(extra)
@@ -46,16 +66,22 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
             split_str = ""
             split_args = []
             try:
-                split_start = video_config["start_time"]
-                split_length = video_config.get("end_time", None)
+                split_start = parse_subtitles_timestamp(video_config["start_time"])
+                split_length = parse_subtitles_timestamp(video_config.get("end_time", None))
                 if not split_length:
                     split_length = video_config["length"]
                 filebase = video_config["rename_to"]
                 if fileext in filebase:
                     filebase = ".".join(filebase.split(".")[:-1])
 
-                split_args += ["-ss", str(split_start), "-t",
-                    str(split_length), filebase + "." + fileext]
+                split_args += ["-ss", str(split_start), "-to", str(split_length)]
+                
+                
+                # split_args += ["-preset", "hq"]
+                
+                
+                split_args += [filebase + "." + fileext]
+                
                 print("########################################################")
                 print("About to run: "+" ".join(split_cmd+split_args))
                 print("########################################################")
@@ -66,7 +92,7 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
                     print("The format of each json array should be:")
                     print("{start_time: <int>, length: <int>, rename_to: <string>}")
                 elif manifest_type == "csv":
-                    print("start_time,length,rename_to should be the first line ")
+                    print("start_time,end_time,rename_to should be the first line ")
                     print("in the csv file.")
                 print("#############################################")
                 print(e)
@@ -109,7 +135,7 @@ def split_by_seconds(filename, split_length, vcodec="copy", acodec="copy",
         else:
             split_start = split_length * n
 
-        split_args += ["-ss", str(split_start), "-t", str(split_length),
+        split_args += ["-ss", str(split_start), "-to", str(split_length),
                        filebase + "-" + str(n+1) + "-of-" + \
                         str(split_count) + "." + fileext]
         print("About to run: "+" ".join(split_cmd+split_args))
