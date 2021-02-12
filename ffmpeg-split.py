@@ -1,13 +1,21 @@
 #!/usr/bin/env python
 
-#ffmpeg docs
-#https://ffmpeg.org/ffmpeg.html
+# 1. download ffmpeg
+# https://github.com/BtbN/FFmpeg-Builds/releases
+# https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2021-02-11-12-32/ffmpeg-N-101061-gba2cebb49c-win64-gpl-vulkan.zip
+ 
+# 2. add folder with ffmpeg to PATH
 
-#download ffmpeg
-#https://github.com/BtbN/FFmpeg-Builds/releases
-#https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2021-02-11-12-32/ffmpeg-N-101061-gba2cebb49c-win64-gpl-vulkan.zip
+# 3. prepare manifest with srt2csv.py
 
-#add folder with ffmpeg to PATH
+# 4. usage
+# python .\ffmpeg-split.py -f video/yarkost.avi -m video/manifest.csv -v libx264
+
+# 5. ffmpeg docs
+# https://ffmpeg.org/ffmpeg.html
+ 
+# 6. make hardsubed video
+# https://trac.ffmpeg.org/wiki/HowToBurnSubtitlesIntoVideo
 
 import csv
 import subprocess
@@ -15,6 +23,7 @@ import math
 import json
 import os
 import shlex
+import pathlib
 from optparse import OptionParser
 from datetime import datetime, timedelta
 
@@ -22,9 +31,6 @@ from datetime import datetime, timedelta
 def parse_subtitles_timestamp(ts):
     if not ts:
         return None
-    # t = datetime.strptime(ts, "%H:%M:%S,%f")
-    # delta = timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond)
-    # return str(delta.total_seconds())
     return ts.replace(',','.')
 
 def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
@@ -53,8 +59,9 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
         else:
             print("Format not supported. File must be a csv or json file")
             raise SystemExit
-            
-        print(config)
+
+        pathlib.Path(os.path.join("output","videos")).mkdir(parents=True, exist_ok=True)
+        # pathlib.Path(os.path.join("output","texts").mkdir(parents=True, exist_ok=True)
 
         split_cmd = ["ffmpeg", "-i", filename, "-vcodec", vcodec,
                      "-acodec", acodec, "-y"] + shlex.split(extra)
@@ -70,16 +77,11 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
                 split_length = parse_subtitles_timestamp(video_config.get("end_time", None))
                 if not split_length:
                     split_length = video_config["length"]
-                filebase = video_config["rename_to"]
+                filebase = os.path.join("output", "videos", video_config["rename_to"])
                 if fileext in filebase:
                     filebase = ".".join(filebase.split(".")[:-1])
 
                 split_args += ["-ss", str(split_start), "-to", str(split_length)]
-                
-                
-                # split_args += ["-preset", "hq"]
-                
-                
                 split_args += [filebase + "." + fileext]
                 
                 print("########################################################")
@@ -98,50 +100,6 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
                 print(e)
                 raise SystemExit
 
-def get_video_length(filename):
-
-    output = subprocess.check_output(("ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", filename)).strip()
-    video_length = int(float(output))
-    print("Video length in seconds: "+str(video_length))
-
-    return video_length
-
-def ceildiv(a, b):
-    return int(math.ceil(a / float(b)))
-
-def split_by_seconds(filename, split_length, vcodec="copy", acodec="copy",
-                     extra="", video_length=None, **kwargs):
-    if split_length and split_length <= 0:
-        print("Split length can't be 0")
-        raise SystemExit
-
-    if not video_length:
-        video_length = get_video_length(filename)
-    split_count = ceildiv(video_length, split_length)
-    if(split_count == 1):
-        print("Video length is less then the target split length.")
-        raise SystemExit
-
-    split_cmd = ["ffmpeg", "-i", filename, "-vcodec", vcodec, "-acodec", acodec] + shlex.split(extra)
-    try:
-        filebase = ".".join(filename.split(".")[:-1])
-        fileext = filename.split(".")[-1]
-    except IndexError as e:
-        raise IndexError("No . in filename. Error: " + str(e))
-    for n in range(0, split_count):
-        split_args = []
-        if n == 0:
-            split_start = 0
-        else:
-            split_start = split_length * n
-
-        split_args += ["-ss", str(split_start), "-to", str(split_length),
-                       filebase + "-" + str(n+1) + "-of-" + \
-                        str(split_count) + "." + fileext]
-        print("About to run: "+" ".join(split_cmd+split_args))
-        subprocess.check_output(split_cmd+split_args)
-
-
 def main():
     parser = OptionParser()
 
@@ -150,41 +108,6 @@ def main():
                         help = "File to split, for example sample.avi",
                         type = "string",
                         action = "store"
-                        )
-    parser.add_option("-s", "--split-size",
-                        dest = "split_length",
-                        help = "Split or chunk size in seconds, for example 10",
-                        type = "int",
-                        action = "store"
-                        )
-    parser.add_option("-c", "--split-chunks",
-                        dest = "split_chunks",
-                        help = "Number of chunks to split to",
-                        type = "int",
-                        action = "store"
-                        )
-    parser.add_option("-S", "--split-filesize",
-                        dest = "split_filesize",
-                        help = "Split or chunk size in bytes (approximate)",
-                        type = "int",
-                        action = "store"
-                        )
-    parser.add_option("--filesize-factor",
-                        dest = "filesize_factor",
-                        help = "with --split-filesize, use this factor in time to" \
-                               " size heuristics [default: %default]",
-                        type = "float",
-                        action = "store",
-                        default = 0.95
-                        )
-    parser.add_option("--chunk-strategy",
-                        dest = "chunk_strategy",
-                        help = "with --split-filesize, allocate chunks according to" \
-                               " given strategy (eager or even)",
-                        type = "choice",
-                        action = "store",
-                        choices = ['eager', 'even'],
-                        default = 'eager'
                         )
     parser.add_option("-m", "--manifest",
                       dest = "manifest",
@@ -225,22 +148,7 @@ def main():
     if options.manifest:
         split_by_manifest(**(options.__dict__))
     else:
-        video_length = None
-        if not options.split_length:
-            video_length = get_video_length(options.filename)
-            file_size = os.stat(options.filename).st_size
-            split_filesize = None
-            if options.split_filesize:
-                split_filesize = int(options.split_filesize * options.filesize_factor)
-            if split_filesize and options.chunk_strategy == 'even':
-                options.split_chunks = ceildiv(file_size, split_filesize)
-            if options.split_chunks:
-                options.split_length = ceildiv(video_length, options.split_chunks)
-            if not options.split_length and split_filesize:
-                options.split_length = int(split_filesize / float(file_size) * video_length)
-        if not options.split_length:
-            bailout()
-        split_by_seconds(video_length=video_length, **(options.__dict__))
+        print("Please, provide the manifest *.csv file with timings to split")
 
 if __name__ == '__main__':
     main()
