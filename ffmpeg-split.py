@@ -22,7 +22,6 @@ import subprocess
 import math
 import json
 import os
-import shlex
 import pathlib
 from optparse import OptionParser
 from datetime import datetime, timedelta
@@ -50,12 +49,12 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
         print("File does not exist: %s" % manifest)
         raise SystemExit
 
-    with open(manifest) as manifest_file:
+    with open(manifest, mode="r", encoding="utf8") as manifest_file:
         manifest_type = manifest.split(".")[-1]
         if manifest_type == "json":
             config = json.load(manifest_file)
         elif manifest_type == "csv":
-            config = csv.DictReader(manifest_file, delimiter='\t')
+            config = csv.DictReader(manifest_file, delimiter='\t', )
         else:
             print("Format not supported. File must be a csv or json file")
             raise SystemExit
@@ -63,8 +62,8 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
         pathlib.Path(os.path.join("output","videos")).mkdir(parents=True, exist_ok=True)
         # pathlib.Path(os.path.join("output","texts").mkdir(parents=True, exist_ok=True)
 
-        split_cmd = ["ffmpeg", "-i", filename, "-vcodec", vcodec,
-                     "-acodec", acodec, "-y"] + shlex.split(extra)
+        split_cmd = ["ffmpeg", "-i", filename, "-vcodec", vcodec, "-y"]
+        # split_cmd += ["-acodec", acodec]
         try:
             fileext = filename.split(".")[-1]
         except IndexError as e:
@@ -82,6 +81,8 @@ def split_by_manifest(filename, manifest, vcodec="copy", acodec="copy",
                     filebase = ".".join(filebase.split(".")[:-1])
 
                 split_args += ["-ss", str(split_start), "-to", str(split_length)]
+                #downsample 5.1 to stereo
+                split_args += ["-c:a", "ac3", "-ac", "2"]
                 split_args += [filebase + "." + fileext]
                 
                 print("########################################################")

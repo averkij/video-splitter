@@ -20,10 +20,11 @@ def process_file(input, output, **kwargs):
     with open(input, mode="r", encoding="utf-8") as input_file: 
         subs = list(srt.parse("\n".join([x.rstrip() for x in input_file.readlines()])))
         with open(output, mode="w", encoding="utf-8") as output_file: 
-            output_file.write("start_time\tend_time\trename_to\n")
+            output_file.write(f"start_time\tend_time\trename_to\tcontent\n")
             counter = 0
             for sub in subs:
-                output_file.write(f"{srt.timedelta_to_srt_timestamp(sub.start)}\t{srt.timedelta_to_srt_timestamp(sub.end)}\tvideo{counter}.mpg\n")
+                content = re.sub(r"\r?\n|r", '', sub.content).replace("\t",'')
+                output_file.write(f"{srt.timedelta_to_srt_timestamp(sub.start)}\t{srt.timedelta_to_srt_timestamp(sub.end)}\tvideo{counter}.mpg\t{content}\n")
                 counter += 1
 
 
