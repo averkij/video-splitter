@@ -4,10 +4,11 @@ This fork modifies the original scripts in a way of using subtitles for preparin
 
 Under the hood script uses **ffmpeg** so you will need to have that installed. Sound in 5.1 format squashes to the stereo by using the **ffmpeg** commands.
 
+![terminator](/img/terminator.jpg)
 
-## Spliting video
+## Splitting video
 
-As an input you should have the video and the **correctly timed** subtitles in *.srt* format. Please, check that before proceeding.
+As an input you should have the video and the **correctly synchronized** subtitles in *.srt* format. Please, check that before proceeding.
 
 ### Prepare the config
 
