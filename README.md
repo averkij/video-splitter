@@ -1,6 +1,6 @@
 # Video Splitter via Subtitles Timestamps
 
-This command line Python scripts processes the *.srt file with subtitles and makes the splitting config. Using this config it splits the video into chunks.
+This fork modifies the original scripts in a way of using subtitles for preparing the splitting config first. Using this config it splits the video into chunks.
 
 Under the hood script uses **ffmpeg** so you will need to have that installed. Sound in 5.1 format squashes to the stereo by using the **ffmpeg** commands.
 
