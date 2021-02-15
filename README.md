@@ -1,104 +1,43 @@
-# Command Line Video Splitter
+# Video Splitter via Subtitles Timestamps
 
-Simple command line Python script that splits video into multi chunks. Under the hood script uses [FFMpeg] so you will need to have that installed. No transcoding or modification of video happens, it just get's split properly.
+This command line Python scripts processes the *.srt file with subtitles and makes the splitting config. Using this config it splits the video into chunks.
 
-Run `python ffmpeg-split.py -h` to see the options. Here are few samples of how it could be used:
-
-## Spliting video into equal chunks
-
-`python ffmpeg-split.py -f big_video_file.mp4 -s 10`
-
-This splits `big_video_file.mp4` into chunks, and the size of chunk is 10 seconds. Each chunk will be suffixed with numeric index, for example `big_video_file-0.mp4`, `big_video_file-1.mp4`, etc.
-
-## Spliting video into equal chunks with some extra options
-
-`python ffmpeg-split.py -f input.mp4 -s 600 -v libx264 -e '-vf "scale=320:240" -threads 8'`
-
-This splits `input.mp4` into chunks, and the size of chunk is 600 seconds. With extra option to scale output to `320:240` and use 8 threads to speed up.
-
-## Splitting videos into unequal chunks
-
-In order to create unequal chunks of a video, you'll need to create ***manifest.json***.
+Under the hood script uses **ffmpeg** so you will need to have that installed. Sound in 5.1 format squashes to the stereo by using the **ffmpeg** commands.
 
 
-***manifest.json***
+## Spliting video
 
-```json
+As an input you should have the video and the **correctly timed** subtitles in *.srt* format. Please, check that before proceeding.
 
-[
-    {
-        "start_time": 0,
-        "length": 34,
-        "rename_to": "video1"
-    },
-    {
-        "start_time": 35,
-        "length": 22,
-        "rename_to": "video2.mp4"
-    }
-]
+### Prepare the config
 
-```
+`python .\srt2csv.py -i input\Terminator.srt -o terminator_config.csv`
 
-Afterwards run:
+This makes the config file which looks like this:
 
-`python ffmpeg-split.py -f big_video_file.mp4 -m manifest.json`
+|start_time|end_time|rename_to|content|
+|-|-|-|-|
+|...|...|...|...|
+|00:05:53,697|	00:05:55,231|	video15.mpg|	You clothes.|
+|00:05:55,299|	00:05:56,933|	video16.mpg|	Give them to me.|
+|00:05:57,001|	00:05:58,301|	video17.mpg|	Now.|
+|...|...|...|...|
 
-This splits `big_video_file.mp4` into 2 video files, video1.mp4 and video2.mp4. The video1.mp4 is a 34 seconds
-clip, starting from 0:00 to 0:34 of the `big_video_file.mp4`.
+You should inspect the config and leave only lines you want to extract from the input video.
 
+### Split by subtitles
 
-Alternatively, you can use a ***manifest.csv*** file to accomplish the task above.
+Using the config you can split the video now.
 
-***manifest.csv***:
+`python .\ffmpeg-split.py -f terminator.avi -m terminator_config.csv -v libx264`
 
-```CSV
+This splits `terminator.avi` into chunks using the H.264 encoder. In case of troubles you can omit **-v** parameter to use the original encoder or choose different supported by ffmpeg encoder (see the list in the ffmpeg documentation).
 
-start_time,length,rename_to
-0,34,video1
-35,22,video2
+### Output
 
-```
-
-
-#### Manifest Options
-
-* start_time      - number of seconds into the video or start time
-* length          - length of the video in seconds. The end time of the video is calculated by the start_time plus the length of the video.
-* rename_to       - name of the video clip to be saved
-* end_time        - end time of the video
-
-
-## Additional Arguments
-
-* -v or --vcodec        ffmpeg video codec to be used.
-* -a or --acodec        ffmpeg audio codec to be used.
-* -m or --manifest      manifest file to control the splitting of videos.
-* -f or --file          video file to split.
-* -s or --split-size    seconds to evenly split the videos
-* -e or --extra         extra optional options for ffmpeg, e.g. '-e -threads 8' to use 8 threads to speed up.
-
-#### Notes:
-
-The -s and -m options should not be used together. If they are, -m option takes
-precedent over the -s option
-
-
-## Known Issues with ffmpeg
-
-* There might be some videos that aren't showing properly after splitting the source video with ffmpeg. To resolve
-this, use the -v option and pass in the associated video codec for the source video or video format. For example, mp4 videos
-use h264 video codec. Therefore, running the command
-`python ffmpeg-split.py -f example.mp4 -s -v h264`, may resolve this issue.
-
+The resulted video will be placed in the **output/video** folder.
 
 ## Installing ffmpeg
 
 See [FFmpeg installation guide](https://www.ffmpeg.org/download.html) for details.
-
-
-
-
-[FFMpeg]: https://www.ffmpeg.org/
-
 
