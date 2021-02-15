@@ -1,6 +1,6 @@
 # Video Splitter via Subtitles Timestamps
 
-This fork modifies the original scripts in a way of using subtitles for preparing the splitting config first. Using this config it splits the video into chunks.
+This scripts splits the original video into chunks accordnig to the config file. To prepare the config use the srt2csv.py script and subtitles in .srt format.
 
 Under the hood script uses **ffmpeg** so you will need to have that installed. Sound in 5.1 format squashes to the stereo by using the **ffmpeg** commands.
 
