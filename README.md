@@ -12,7 +12,7 @@ Under the hood script uses **ffmpeg** so you will need to have that installed. S
     - See [FFmpeg installation guide](https://www.ffmpeg.org/download.html) for details.
 3. Python 3 for running the scripts.
 4. srt library to parse the .srt file with subtitles.
-    - Install it with <code>pip install srt.</code>
+    - Install it with <code>pip install srt</code>.
 
 ## Splitting video
 
