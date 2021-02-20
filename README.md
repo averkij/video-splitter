@@ -1,6 +1,7 @@
 # Video Splitter via Subtitles Timestamps
 
 These scripts split the original video into chunks accordnig to subtitles timestamps.
+
 Under the hood script uses **ffmpeg** so you will need to have that installed. Sound in 5.1 format squashes to the stereo by using the **ffmpeg** commands.
 
 ![terminator](/img/terminator.jpg)
