@@ -14,14 +14,6 @@ Under the hood script uses **ffmpeg** so you will need to have that installed. S
 4. srt library to parse the .srt file with subtitles.
     - Install it with <code>pip install srt</code>.
 
-## Hardsub
-
-You can optionally burn the subtitles into the video with the following ffmpeg command:
-
-- <code>ffmpeg -i cutted.avi -vcodec libx264 -vf subtitles=cutted.srt:force_style='Fontsize=26' -y output.avi</code>
-
-Use the **force_style** attribute to adjust the subtitles appearance. Also see the [Subtitles filter documentation](http://ffmpeg.org/ffmpeg-filters.html#subtitles-1) and this [How to burn subtitles into video](https://trac.ffmpeg.org/wiki/HowToBurnSubtitlesIntoVideo) guide.
-
 ## Splitting video
 
 As an input you should have the video and the **correctly synchronized** subtitles in *.srt* format. Please, check that before proceeding.
