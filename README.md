@@ -17,6 +17,7 @@ Under the hood script uses **ffmpeg** so you will need to have that installed. S
 ## Hardsub
 You can optionally burn the subtitles into the video with the following ffmpeg command:
 - <code>ffmpeg -i cutted.avi -vcodec libx264 -vf subtitles=cutted.srt:force_style='Fontsize=26' -y output.avi</code>
+
 Use the **force_style** attribute to adjust the subtitles appearance. Also see the [Subtitles filter documentation](http://ffmpeg.org/ffmpeg-filters.html#subtitles-1) and this [How to burn subtitles into video](https://trac.ffmpeg.org/wiki/HowToBurnSubtitlesIntoVideo) guide.
 
 ## Splitting video
@@ -54,7 +55,7 @@ This splits `terminator.avi` into chunks using the H.264 encoder. In case of tro
   - <code>ffmpeg -i input.mkv -vcodec libx264 -ss 00:02:00 _**-to**_ 00:02:30 cutted_30s.mkv</code>
 - To rescale the video
   - <code>ffmpeg -i input.avi -vf scale=1200:-1 output.avi</code>
-  
+
 ### Output
 
 The resulted video will be placed in the **output/video** folder.
