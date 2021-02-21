@@ -1,10 +1,18 @@
 # Video Splitter via Subtitles Timestamps
 
-This scripts splits the original video into chunks accordnig to the config file. To prepare the config use the srt2csv.py script and subtitles in .srt format.
+These scripts split the original video into chunks accordnig to subtitles timestamps.
 
 Under the hood script uses **ffmpeg** so you will need to have that installed. Sound in 5.1 format squashes to the stereo by using the **ffmpeg** commands.
 
 ![terminator](/img/terminator.jpg)
+
+## Requirements
+
+1. FFmpeg for manipulating with video file.
+    - See [FFmpeg installation guide](https://www.ffmpeg.org/download.html) for details.
+3. Python 3 for running the scripts.
+4. srt library to parse the .srt file with subtitles.
+    - Install it with <code>pip install srt</code>.
 
 ## Hardsub
 
@@ -45,8 +53,4 @@ This splits `terminator.avi` into chunks using the H.264 encoder. In case of tro
 ### Output
 
 The resulted video will be placed in the **output/video** folder.
-
-## Installing ffmpeg
-
-See [FFmpeg installation guide](https://www.ffmpeg.org/download.html) for details.
 
