@@ -48,6 +48,10 @@ Using the config you can split the video now.
 
 This splits `terminator.avi` into chunks using the H.264 encoder. In case of troubles you can omit **-v** parameter to use the original encoder or choose different supported by ffmpeg encoder (see the list in the ffmpeg documentation).
 
+### Output
+
+The resulted video will be placed in the **output/video** folder.
+
 ## Useful ffmpeg commands
 - To cut the 10 seconds after the first minute
   - <code>ffmpeg -i input.mkv -vcodec libx264  -ss 00:01:00 _**-t**_ 00:00:10 cutted_10s.mkv</code>
@@ -56,7 +60,4 @@ This splits `terminator.avi` into chunks using the H.264 encoder. In case of tro
 - To rescale the video
   - <code>ffmpeg -i input.avi -vf scale=1200:-1 output.avi</code>
 
-### Output
-
-The resulted video will be placed in the **output/video** folder.
 
