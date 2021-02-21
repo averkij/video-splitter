@@ -6,15 +6,23 @@ Under the hood script uses **ffmpeg** so you will need to have that installed. S
 
 ![terminator](/img/terminator.jpg)
 
+## Hardsub
+
+You can optionally burn the subtitles into the video with the following ffmpeg command:
+
+- <code>ffmpeg -i cutted.avi -vcodec libx264 -vf subtitles=cutted.srt:force_style='Fontsize=26' -y output.avi</code>
+
+Use the **force_style** attribute to adjust the subtitles appearance. Also see the [Subtitles filter documentation](http://ffmpeg.org/ffmpeg-filters.html#subtitles-1) and this [How to burn subtitles into video](https://trac.ffmpeg.org/wiki/HowToBurnSubtitlesIntoVideo) guide.
+
 ## Splitting video
 
 As an input you should have the video and the **correctly synchronized** subtitles in *.srt* format. Please, check that before proceeding.
 
 ### Prepare the config
 
-`python .\srt2csv.py -i input\Terminator.srt -o terminator_config.csv`
+- <code>python .\srt2csv.py -i input\Terminator.srt -o terminator_config.csv</code>
 
-This makes the config file which looks like this:
+This makes the config file which looks something like this:
 
 |start_time|end_time|rename_to|content|
 |-|-|-|-|
@@ -30,7 +38,7 @@ You should inspect the config and leave only lines you want to extract from the 
 
 Using the config you can split the video now.
 
-`python .\ffmpeg-split.py -f terminator.avi -m terminator_config.csv -v libx264`
+- <code>python .\ffmpeg-split.py -f terminator.avi -m terminator_config.csv -v libx264</code>
 
 This splits `terminator.avi` into chunks using the H.264 encoder. In case of troubles you can omit **-v** parameter to use the original encoder or choose different supported by ffmpeg encoder (see the list in the ffmpeg documentation).
 
